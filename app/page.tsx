@@ -8,6 +8,7 @@ import { TeamSection } from "@/components/team-section"
 import { ContactSection } from "@/components/contact-section"
 import { Footer } from "@/components/footer"
 import { ScrollAnimations } from "@/components/scroll-animations"
+import { ScrollToTop } from "@/components/scroll-to-top"
 
 export default function Page() {
   return (
@@ -24,6 +25,7 @@ export default function Page() {
       </main>
       <Footer />
       <ScrollAnimations />
+      <ScrollToTop />
     </>
   )
 }

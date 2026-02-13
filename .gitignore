@@ -9,3 +9,6 @@ node_modules/
 .env*.local
 .env
 .DS_Store
+
+# Use npm for install (Vercel uses lockfile to choose package manager)
+pnpm-lock.yaml

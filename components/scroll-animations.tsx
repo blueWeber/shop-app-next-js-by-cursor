@@ -8,11 +8,14 @@ gsap.registerPlugin(ScrollTrigger)
 
 export function ScrollAnimations() {
   useEffect(() => {
-    const sections = document.querySelectorAll<HTMLElement>("main section[id]")
-    const triggers: ScrollTrigger[] = []
+    const runAnimations = () => {
+      const sections = document.querySelectorAll<HTMLElement>("main section[id]")
+      if (sections.length === 0) return
 
-    // 공통: 섹션이 뷰포트에 들어올 때 페이드인 + 위로 슬라이드
-    sections.forEach((section) => {
+      const triggers: ScrollTrigger[] = []
+
+      // 공통: 섹션이 뷰포트에 들어올 때 페이드인 + 위로 슬라이드
+      sections.forEach((section) => {
       const id = section.id
       const grid = section.querySelector<HTMLElement>(".grid")
       const isPhilosophy = id === "philosophy"
@@ -88,13 +91,47 @@ export function ScrollAnimations() {
         opacity: 0,
         duration: 0.85,
         ease: "power3.out",
-        scrollTrigger: { trigger: section, start: "top 88%" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top 88%",
+          onRefresh: (self) => {
+            if (self.progress > 0) self.animation.progress(1)
+          },
+        },
       })
       triggers.push(t.scrollTrigger!)
     })
 
+      return triggers
+    }
+
+    const triggers = runAnimations() ?? []
+
+    const refreshAndCatchUp = () => {
+      ScrollTrigger.refresh()
+      triggers.forEach((st) => {
+        if (st && st.progress > 0) st.animation.progress(1)
+      })
+    }
+
+    const timeoutId = setTimeout(refreshAndCatchUp, 150)
+    const loadTimeoutId = setTimeout(refreshAndCatchUp, 500)
+    const lateTimeoutId = setTimeout(refreshAndCatchUp, 1000)
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") refreshAndCatchUp()
+    }
+
+    window.addEventListener("load", refreshAndCatchUp)
+    document.addEventListener("visibilitychange", onVisibilityChange)
+
     return () => {
-      triggers.forEach((t) => t.kill())
+      clearTimeout(timeoutId)
+      clearTimeout(loadTimeoutId)
+      clearTimeout(lateTimeoutId)
+      window.removeEventListener("load", refreshAndCatchUp)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+      triggers.forEach((t) => t?.kill())
       ScrollTrigger.getAll().forEach((t) => t.kill())
     }
   }, [])
